@@ -1,0 +1,146 @@
+service: serverless-localstack-app
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: ${opt:stage, 'local'}
+  environment:
+    AWS_ACCESS_KEY_ID: test
+    AWS_SECRET_ACCESS_KEY: test
+    AWS_REGION: us-east-1
+    AWS_ENDPOINT_URL: http://localhost:4566
+
+plugins:
+  - serverless-localstack
+  - serverless-offline
+
+custom:
+  localstack:
+    stages:
+      - local
+    host: http://localhost
+    edgePort: 4566
+  dynamodbEndpoint: http://localhost:4566
+
+functions:
+  # nodeLambdaHandler:
+  #   handler: build/main.handler
+  #   events:
+  #     - s3:
+  #         bucket: test-bucket-name
+  #         event: s3:ObjectCreated:*
+  #         rules:
+  #           - suffix: .pdf
+  #     - http:
+  #         path: /
+  #         method: ANY
+  movieHandler:
+    handler: dist/handlers/movieHandler.handler
+    events:
+      - http:
+          path: movies
+          method: post
+      - http:
+          path: movies
+          method: get
+      - http:
+          path: movies/{id}
+          method: get
+      - http:
+          path: movies/{id}
+          method: delete
+  theatreHandler:
+    handler: dist/handlers/theatreHandler.handler
+    events:
+      - http:
+          path: theatres
+          method: post
+      - http:
+          path: theatres
+          method: get
+      - http:
+          path: theatres/{id}
+          method: delete
+  showHandler:
+    handler: dist/handlers/showHandler.handler
+    events:
+      - http:
+          path: shows
+          method: post
+      - http:
+          path: shows/movies/{id}
+          method: get
+      - http:
+          path: shows/{id}
+          method: get
+      - http:
+          path: shows/{id}
+          method: delete
+  bookingHandler:
+    handler: dist/handlers/bookingHandler.handler
+    events:
+      - http:
+          path: bookings
+          method: post
+      - http:
+          path: bookings/{id}
+          method: get
+      - http:
+          path: bookings/{id}
+          method: delete
+
+resources:
+  Resources:
+    Movie:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: movies
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    Theatre:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: theatres
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    Show:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: shows
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    Booking:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: bookings
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

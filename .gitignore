@@ -1,0 +1,6 @@
+node_modules
+dist
+.serverless
+coverage
+yarn.lock
+.DS_Store
